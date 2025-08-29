@@ -1,8 +1,8 @@
 -- Free Play Slot — Yeni/Eski Chat ile uyumlu + GUI + Z kısayolu
 
 -- ====== AYARLAR ======
-local SPIN_FRAMES = 8
-local FRAME_DELAY = 0.2
+local SPIN_FRAMES = 3
+local FRAME_DELAY = 1
 local COOLDOWN = 5
 local EMOJIS = {"🍋","🍒","🍇","🍉","🤑","🐴","💎"}
 

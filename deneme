@@ -1,5 +1,5 @@
 local SPIN_FRAMES = 3
-local FRAME_DELAY = 3.5
+local FRAME_DELAY = 2
 local COOLDOWN = 5
 local EMOJIS = {"🍋","🍒","🍇","🍉","🤑","🐴","💎"}
 

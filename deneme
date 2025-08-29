@@ -1,0 +1,91 @@
+local SPIN_FRAMES = 8
+local FRAME_DELAY = 0.2
+local COOLDOWN = 5
+local EMOJIS = {"🍋","🍒","🍇","🍉","🤑","🐴","💎"}
+
+local lastSpin = 0
+
+local function send(msg)
+    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg,"All")
+end
+
+local function randomRoll()
+    return {EMOJIS[math.random(#EMOJIS)], EMOJIS[math.random(#EMOJIS)], EMOJIS[math.random(#EMOJIS)]}
+end
+
+local function toLine(tbl)
+    return table.concat(tbl," | ")
+end
+
+local function score(roll)
+    if roll[1]==roll[2] and roll[2]==roll[3] then
+        return "jackpot", roll[1]
+    elseif roll[1]==roll[2] or roll[1]==roll[3] or roll[2]==roll[3] then
+        return "small", roll[1]
+    else
+        return "lose", nil
+    end
+end
+
+local function spinSlot()
+    local now = os.clock()
+    if now - lastSpin < COOLDOWN then
+        local left = math.max(0, COOLDOWN - (now - lastSpin))
+        send(string.format("[FREE PLAY] Bekle: %.1fs", left))
+        return
+    end
+    lastSpin = now
+
+    send("[FREE PLAY] 🎰 Slot başlıyor… sadece eğlence!")
+
+    for i=1, SPIN_FRAMES do
+        send(toLine(randomRoll()))
+        task.wait(FRAME_DELAY)
+    end
+
+    task.wait(0.35)
+    local final = randomRoll()
+    send("—")
+    send("FINAL → " .. toLine(final))
+
+    local result, symbol = score(final)
+    if result == "jackpot" then
+        if symbol == "🤑" then
+            send("💎✨ GRRR JACKPOT!!! ✨💎")
+        else
+            send("🎉💎 JACKPOT!!! 💎🎉")
+        end
+    elseif result == "small" then
+        send("🤓 Small Win!! 🤓")
+    else
+        send("😂 YOU GOT NOTHING 😂")
+    end
+end
+
+game:GetService("UserInputService").InputBegan:Connect(function(input, gp)
+    if not gp and input.KeyCode == Enum.KeyCode.Z then
+        spinSlot()
+    end
+end)
+
+-- Mobil & PC için GUI Buton
+local ScreenGui = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
+local Button = Instance.new("TextButton", ScreenGui)
+
+Button.Size = UDim2.new(0,120,0,40)
+Button.Position = UDim2.new(0,20,0.5,-20)
+Button.BackgroundColor3 = Color3.fromRGB(20,20,20)
+Button.TextColor3 = Color3.fromRGB(255,255,255)
+Button.Text = "🎰 SLOT"
+Button.Font = Enum.Font.SourceSansBold
+Button.TextSize = 20
+Button.BackgroundTransparency = 0.1
+Button.AutoButtonColor = true
+Button.BorderSizePixel = 0
+Button.TextStrokeTransparency = 0.5
+Button.ZIndex = 5
+Button.ClipsDescendants = true
+Button.TextWrapped = true
+Button.Active = true
+
+Button.MouseButton1Click:Connect(spinSlot)

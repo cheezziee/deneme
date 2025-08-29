@@ -1,5 +1,5 @@
 local SPIN_FRAMES = 3
-local FRAME_DELAY = 1.3
+local FRAME_DELAY = 2
 local COOLDOWN = 15
 local EMOJIS = {"🍋","🍒","🍇","🍉","🤑","🐴","💎"}
 
@@ -90,7 +90,6 @@ local function spinSlot()
     task.wait(0.35)
     local final = randomRoll()
     send("—")
-    send("FINAL → " .. toLine(final))
 
     local result, symbol = score(final)
     if result == "jackpot" then

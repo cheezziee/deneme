@@ -1,6 +1,6 @@
 local SPIN_FRAMES = 3
-local FRAME_DELAY = 1
-local COOLDOWN = 5
+local FRAME_DELAY = 1.3
+local COOLDOWN = 15
 local EMOJIS = {"🍋","🍒","🍇","🍉","🤑","🐴","💎"}
 
 local Players = game:GetService("Players")

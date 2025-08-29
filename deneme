@@ -1,12 +1,8 @@
--- Free Play Slot — Yeni/Eski Chat ile uyumlu + GUI + Z kısayolu
-
--- ====== AYARLAR ======
 local SPIN_FRAMES = 3
-local FRAME_DELAY = 1
+local FRAME_DELAY = 3.5
 local COOLDOWN = 5
 local EMOJIS = {"🍋","🍒","🍇","🍉","🤑","🐴","💎"}
 
--- ====== SERVISLER ======
 local Players = game:GetService("Players")
 local Rep = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
@@ -14,9 +10,8 @@ local TextChatService = game:GetService("TextChatService")
 local UIS = game:GetService("UserInputService")
 local lp = Players.LocalPlayer
 
--- ====== CHAT GÖNDERİCİ (Yeni + Eski + Fallback) ======
 local function buildSender()
-    -- Yeni chat (TextChatService)
+    
     if TextChatService and TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
         -- RBXGeneral kanalını bekle
         local channels = TextChatService:WaitForChild("TextChannels", 5)
@@ -34,7 +29,7 @@ local function buildSender()
             end
         end
     end
-    -- Eski chat
+    
     local chatEvents = Rep:FindFirstChild("DefaultChatSystemChatEvents")
     if chatEvents and chatEvents:FindFirstChild("SayMessageRequest") then
         local say = chatEvents.SayMessageRequest
@@ -42,7 +37,7 @@ local function buildSender()
             say:FireServer(msg, "All")
         end
     end
-    -- Fallback (yalnızca sana görünür)
+   
     return function(msg)
         pcall(function()
             StarterGui:SetCore("ChatMakeSystemMessage", {Text = msg})
@@ -52,7 +47,6 @@ end
 
 local send = buildSender()
 
--- ====== SLOT MANTIĞI ======
 local lastSpin = 0
 
 local function randomRoll()
@@ -81,12 +75,12 @@ local function spinSlot()
     local now = os.clock()
     if now - lastSpin < COOLDOWN then
         local left = math.max(0, COOLDOWN - (now - lastSpin))
-        send(string.format("[FREE PLAY] Bekle: %.1fs", left))
+        send(string.format("Cooldown... %.1fs", left))
         return
     end
     lastSpin = now
 
-    send("[FREE PLAY] 🎰 Slot başlıyor… sadece eğlence!")
+    send("gl")
 
     for i=1, SPIN_FRAMES do
         send(toLine(randomRoll()))
@@ -106,9 +100,9 @@ local function spinSlot()
             send("🎉💎 JACKPOT!!! 💎🎉")
         end
     elseif result == "small" then
-        send("🤓 Small Win!! 🤓")
+        send("🤓🌟Small Win!!🌟🤓")
     else
-        send("😂 YOU GOT NOTHING 😂")
+        send("😂❌YOU GOT NOTHING❌😂")
     end
 end
 

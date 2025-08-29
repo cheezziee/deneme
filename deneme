@@ -1,20 +1,70 @@
+-- Free Play Slot — Yeni/Eski Chat ile uyumlu + GUI + Z kısayolu
+
+-- ====== AYARLAR ======
 local SPIN_FRAMES = 8
 local FRAME_DELAY = 0.2
 local COOLDOWN = 5
 local EMOJIS = {"🍋","🍒","🍇","🍉","🤑","🐴","💎"}
 
+-- ====== SERVISLER ======
+local Players = game:GetService("Players")
+local Rep = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+local TextChatService = game:GetService("TextChatService")
+local UIS = game:GetService("UserInputService")
+local lp = Players.LocalPlayer
+
+-- ====== CHAT GÖNDERİCİ (Yeni + Eski + Fallback) ======
+local function buildSender()
+    -- Yeni chat (TextChatService)
+    if TextChatService and TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+        -- RBXGeneral kanalını bekle
+        local channels = TextChatService:WaitForChild("TextChannels", 5)
+        if channels then
+            local general
+            local t0 = os.clock()
+            repeat
+                general = channels:FindFirstChild("RBXGeneral")
+                if not general then task.wait(0.1) end
+            until general or os.clock() - t0 > 5
+            if general then
+                return function(msg)
+                    general:SendAsync(msg)
+                end
+            end
+        end
+    end
+    -- Eski chat
+    local chatEvents = Rep:FindFirstChild("DefaultChatSystemChatEvents")
+    if chatEvents and chatEvents:FindFirstChild("SayMessageRequest") then
+        local say = chatEvents.SayMessageRequest
+        return function(msg)
+            say:FireServer(msg, "All")
+        end
+    end
+    -- Fallback (yalnızca sana görünür)
+    return function(msg)
+        pcall(function()
+            StarterGui:SetCore("ChatMakeSystemMessage", {Text = msg})
+        end)
+    end
+end
+
+local send = buildSender()
+
+-- ====== SLOT MANTIĞI ======
 local lastSpin = 0
 
-local function send(msg)
-    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg,"All")
-end
-
 local function randomRoll()
-    return {EMOJIS[math.random(#EMOJIS)], EMOJIS[math.random(#EMOJIS)], EMOJIS[math.random(#EMOJIS)]}
+    return {
+        EMOJIS[math.random(#EMOJIS)],
+        EMOJIS[math.random(#EMOJIS)],
+        EMOJIS[math.random(#EMOJIS)]
+    }
 end
 
-local function toLine(tbl)
-    return table.concat(tbl," | ")
+local function toLine(t)
+    return string.format("%s | %s | %s", t[1], t[2], t[3])
 end
 
 local function score(roll)
@@ -62,30 +112,34 @@ local function spinSlot()
     end
 end
 
-game:GetService("UserInputService").InputBegan:Connect(function(input, gp)
+-- ====== KISAYOL (PC) ======
+UIS.InputBegan:Connect(function(input, gp)
     if not gp and input.KeyCode == Enum.KeyCode.Z then
         spinSlot()
     end
 end)
 
--- Mobil & PC için GUI Buton
-local ScreenGui = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
-local Button = Instance.new("TextButton", ScreenGui)
+-- ====== BASİT GUI (Mobil + PC) ======
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SlotGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = lp:WaitForChild("PlayerGui")
 
-Button.Size = UDim2.new(0,120,0,40)
-Button.Position = UDim2.new(0,20,0.5,-20)
+local Button = Instance.new("TextButton")
+Button.Parent = ScreenGui
+Button.Size = UDim2.new(0, 120, 0, 40)
+Button.Position = UDim2.new(1, -130, 0.5, -20) -- sağ orta
 Button.BackgroundColor3 = Color3.fromRGB(20,20,20)
 Button.TextColor3 = Color3.fromRGB(255,255,255)
-Button.Text = "🎰 SLOT"
-Button.Font = Enum.Font.SourceSansBold
+Button.Text = "SLOT 🤑"
+Button.Font = Enum.Font.GothamBold
 Button.TextSize = 20
-Button.BackgroundTransparency = 0.1
-Button.AutoButtonColor = true
 Button.BorderSizePixel = 0
-Button.TextStrokeTransparency = 0.5
-Button.ZIndex = 5
+Button.AutoButtonColor = true
 Button.ClipsDescendants = true
-Button.TextWrapped = true
-Button.Active = true
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = Button
 
 Button.MouseButton1Click:Connect(spinSlot)
